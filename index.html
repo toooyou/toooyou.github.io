@@ -3,24 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTMX and Google Sheets Example</title>
-    <script src="https://unpkg.com/htmx.org@1.8.5/dist/htmx.min.js"></script>
+    <title>Google Apps Script Fetch Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .data {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+    </style>
 </head>
 <body>
-    <!-- Button to fetch data from Google Sheets -->
-    <button 
-        id="fetchButton"
-        hx-get="https://script.google.com/macros/s/AKfycbzHB0krZqf-VorDttBiMKQIu2R6iYWP_1VCshh63rs5dAKVmBwQbIAYEwZ8RIa-DzLV/exec" 
-        hx-trigger="click"
-        hx-target="#response"
-        hx-swap="innerHTML"
-    >
-        Fetch Sheet Data
-    </button>
 
-    <!-- Response display -->
-    <div id="response">
-        <!-- Data from Google Sheets will be injected here -->
-    </div>
+<h1>Google Apps Script Fetch Example</h1>
+
+<button id="fetchDataBtn">Fetch Data</button>
+
+<div id="output" class="data"></div>
+
+<script>
+    document.getElementById('fetchDataBtn').addEventListener('click', function() {
+        // Replace the URL below with your Google Apps Script URL
+        const url = 'https://script.googleusercontent.com/macros/echo?user_content_key=ImWOIaymWqUa_ZZOURW7jIoLAn-xMvl_Et-dprBMTU8Llrm6A4X2rmaoJEaSuSfjcXKVVdC7MFdPV89XwtqfNxnKWF5B3wTOm5_BxDlH2jW0nuo2oDemN9CCS2h10ox_1xSncGQajx_ryfhECjZEnItnaPnjwkVtFWopPT8gKPywfiqgsvLWMH8gvRboi5183TjJx5CYHx0ArkylzV8Cd4LifZj8Ivi2h6xzjKQ997d7l7oB0iIsSg&lib=MnjXEaYZY9Ge3fDpxpSrK-nG9YT7X8WT8';
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();  // Assuming the response is JSON
+            })
+            .then(data => {
+                console.log('Success:', data);
+                document.getElementById('output').innerText = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('output').innerText = 'Error fetching data: ' + error.message;
+            });
+    });
+</script>
+
 </body>
 </html>
