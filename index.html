@@ -1,59 +1,22 @@
 <!DOCTYPE html>
-<html lang="en" x-data="app()">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dynamic Routing with Alpine.js</title>
-  <script src="https://cdn.jsdelivr.net/npm/alpinejs" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Project</title>
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Preline CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/preline@latest/dist/preline.min.css">
+    <!-- Alpine.js -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@latest/dist/alpine.min.js" defer></script>
 </head>
 <body>
-  <nav>
-    <a href="/home" @click.prevent="navigate('/home')">Home</a>
-    <a href="/about" @click.prevent="navigate('/about')">About</a>
-    <a href="/unknown" @click.prevent="navigate('/unknown')">Unknown</a>
-  </nav>
-
-  <div x-html="content"></div>
-
-  <script>
-    function app() {
-      return {
-        content: '<p>Loading...</p>',
-        navigate(path) {
-          history.pushState(null, '', path);
-          this.loadContent(path);
-        },
-        loadContent(path) {
-          // Use the provided Google Apps Script URL
-          const url = `https://script.google.com/macros/s/AKfycbxMoNSRDA9JV4rT9JVCSnCQNMbcB0CY0DYqTaCZyMAqyryAXZs03SZVHMtyj0PGAAsb/exec?path=${path.substring(1)}`;
-          
-          fetch(url)
-            .then(response => {
-              if (!response.ok) {
-                throw new Error('Network response was not ok');
-              }
-              return response.text();
-            })
-            .then(html => {
-              this.content = html;
-            })
-            .catch(error => {
-              console.error('Error fetching content:', error);
-              this.content = '<h1>Something went wrong</h1><p>We encountered an error while fetching the content.</p>';
-            });
-        },
-        init() {
-          // Load content based on initial path or default to home
-          const initialPath = window.location.pathname || '/home';
-          this.loadContent(initialPath);
-          
-          // Handle popstate event for back/forward navigation
-          window.addEventListener('popstate', () => {
-            this.loadContent(window.location.pathname);
-          });
-        }
-      };
-    }
-  </script>
+    <div class="p-6">
+        <h1 x-data="{ open: false }" @click="open = !open" class="text-lg font-bold">
+            Toggle me: <span x-text="open ? 'Open' : 'Closed'"></span>
+        </h1>
+        <!-- Your Preline and Tailwind components here -->
+    </div>
 </body>
 </html>
