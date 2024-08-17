@@ -1,1 +1,26 @@
-testtt
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTMX and Google Sheets Example</title>
+    <script src="https://unpkg.com/htmx.org@1.8.5/dist/htmx.min.js"></script>
+</head>
+<body>
+    <!-- Button to fetch data from Google Sheets -->
+    <button 
+        id="fetchButton"
+        hx-get="YOUR_WEB_APP_URL" 
+        hx-trigger="click"
+        hx-target="#response"
+        hx-swap="innerHTML"
+    >
+        Fetch Sheet Data
+    </button>
+
+    <!-- Response display -->
+    <div id="response">
+        <!-- Data from Google Sheets will be injected here -->
+    </div>
+</body>
+</html>
