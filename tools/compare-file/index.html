@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Comparison</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .box {
+            width: 48%;
+            padding: 20px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            overflow: auto;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            box-sizing: border-box;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+        }
+        .difference {
+            color: red;
+            font-weight: bold;
+        }
+        .result {
+            border: 1px solid #ddd;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .result p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Text Comparison</h1>
+
+    <div class="container">
+        <div class="box">
+            <h2>Text 1</h2>
+            <textarea id="text1" placeholder="Enter text here..."></textarea>
+        </div>
+
+        <div class="box">
+            <h2>Text 2</h2>
+            <textarea id="text2" placeholder="Enter text here..."></textarea>
+        </div>
+    </div>
+
+    <button onclick="compareTexts()">Compare</button>
+
+    <div class="result" id="result">
+        <h2>Comparison Result</h2>
+        <div id="comparisonOutput"></div>
+    </div>
+
+    <script>
+        function compareTexts() {
+            const text1 = document.getElementById('text1').value;
+            const text2 = document.getElementById('text2').value;
+
+            const resultDiv = document.getElementById('comparisonOutput');
+
+            // Split the texts into lines
+            const lines1 = text1.split('\n');
+            const lines2 = text2.split('\n');
+
+            let result = '';
+            const maxLines = Math.max(lines1.length, lines2.length);
+
+            for (let i = 0; i < maxLines; i++) {
+                const line1 = lines1[i] || '';
+                const line2 = lines2[i] || '';
+
+                if (line1 !== line2) {
+                    result += `<p>Line ${i + 1}:</p>
+                               <p>Text 1: <span class="difference">${line1}</span></p>
+                               <p>Text 2: <span class="difference">${line2}</span></p>`;
+                }
+            }
+
+            if (result === '') {
+                result = '<p>No differences found.</p>';
+            }
+
+            resultDiv.innerHTML = result;
+        }
+    </script>
+
+</body>
+</html>
