@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - My E-Commerce Site</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.0/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/preline@1.0.0/dist/preline.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="bg-gray-800 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">My E-Commerce Site</h1>
+            <nav class="flex items-center space-x-4">
+                <ul class="flex space-x-4">
+                    <li><a href="index.html" class="hover:text-gray-400">Home</a></li>
+                    <li><a href="index.html" class="hover:text-gray-400">Products</a></li>
+                    <li><a href="cart.html" class="hover:text-gray-400">Cart</a></li>
+                </ul>
+                <button class="relative" id="cart-button">
+                    <svg class="w-6 h-6 text-white hover:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2.21l.42 2.1L7.6 8H20a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1.9l.42-2.1L5.79 3H3z"/>
+                    </svg>
+                    <span id="cart-count" class="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-medium text-white bg-red-600 rounded-full -translate-x-1/2 translate-y-1/2">0</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+    
+    <main id="cart-list" class="p-4">
+        <!-- Cart items will be rendered here -->
+    </main>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-gray-100 p-4 border-t border-gray-300">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-lg font-semibold" id="cart-total">Total: $0.00</div>
+            <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center space-x-2" id="checkout-button">
+                <i class="fas fa-credit-card"></i>
+                <span>Checkout</span>
+            </button>
+        </div>
+    </div>
+
+    <footer class="bg-gray-800 text-white p-4 text-center">
+        <p>&copy; 2024 My E-Commerce Site</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cart = JSON.parse(localStorage.getItem('cart')) || {};
+            const cartList = document.getElementById('cart-list');
+            const cartCountElement = document.getElementById('cart-count');
+            const cartTotalElement = document.getElementById('cart-total');
+
+            function updateCart() {
+                if (Object.keys(cart).length === 0) {
+                    cartList.innerHTML = '<p class="text-center text-gray-600">Your cart is empty.</p>';
+                    cartCountElement.textContent = '0';
+                    cartTotalElement.textContent = 'Total: $0.00';
+                } else {
+                    fetch('products.json')
+                        .then(response => response.json())
+                        .then(products => {
+                            const cartItems = Object.entries(cart).map(([productId, quantity]) => {
+                                const product = products.find(p => p.id === parseInt(productId));
+                                return product ? `
+                                    <div class="bg-white p-4 shadow-lg rounded-lg flex items-center space-x-4">
+                                        <img src="${product.imageUrl}" alt="${product.name}" class="w-20 h-20 object-cover rounded-lg">
+                                        <div>
+                                            <h2 class="text-lg font-semibold">${product.name}</h2>
+                                            <p class="text-gray-600">$${product.price.toFixed(2)} x ${quantity}</p>
+                                        </div>
+                                    </div>
+                                ` : '';
+                            }).join('');
+                            cartList.innerHTML = cartItems;
+                            const totalAmount = Object.entries(cart).reduce((total, [productId, quantity]) => {
+                                const product = products.find(p => p.id === parseInt(productId));
+                                return total + (product ? product.price * quantity : 0);
+                            }, 0);
+                            cartTotalElement.textContent = `Total: $${totalAmount.toFixed(2)}`;
+                            cartCountElement.textContent = Object.values(cart).reduce((sum, count) => sum + count, 0);
+                        })
+                        .catch(error => console.error('Error fetching product data:', error));
+                }
+            }
+
+            updateCart();
+        });
+    </script>
+</body>
+</html>
