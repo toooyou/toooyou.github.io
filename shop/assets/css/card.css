@@ -90,6 +90,7 @@ section .container .card-inner {
   background: var(--clr);
   border-radius: 1.25rem;
   border-bottom-right-radius: 0;
+  border-top-left-radius: 0;
   overflow: hidden;
 }
 section .container .card-inner .box {
@@ -112,16 +113,18 @@ section .container .card-inner .box .icon {
   position: absolute;
   bottom: -0.9rem;
   right: -0.365rem;
-  padding: 0.6rem 0 0.6rem 0.75rem;
-  width: 9.3rem;
-  height: 3rem;
+  padding: 0.3rem 0 0.3rem 0.3rem;
+  width: 9.7rem;
+  height: 3.799rem;
   background: var(--clr);
   border-top-left-radius: 0.79rem;
+  border-top-right-radius: 0.79rem;
+  border-bottom-left-radius: 1.5rem;
 }
 section .container .card-inner .box .icon:hover .iconBox {
   transform: scale(1.1);
 }
-section .container .card-inner .box .icon::before {
+/* section .container .card-inner .box .icon::before {
   position: absolute;
   content: "";
   bottom: 0.9rem;
@@ -131,8 +134,8 @@ section .container .card-inner .box .icon::before {
   height: 1.25rem;
   border-bottom-right-radius: 0.5rem;
   box-shadow: 0.313rem 0.313rem 0 0.313rem #fff;
-}
-section .container .card-inner .box .icon::after {
+} */
+/* section .container .card-inner .box .icon::after {
   position: absolute;
   content: "";
   top: -1.25rem;
@@ -142,7 +145,7 @@ section .container .card-inner .box .icon::after {
   height: 1.25rem;
   border-bottom-right-radius: 0.5rem;
   box-shadow: 0.313rem 0.313rem 0 0.313rem var(--clr);
-}
+} */
 section .container .card-inner .box .icon .iconBox {
   position: absolute;
   inset: 0.625rem;
