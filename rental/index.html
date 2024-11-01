@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Product Rental & Cart</title>
+   <style>
+       body { font-family: Arial, sans-serif; }
+       table { width: 100%; border-collapse: collapse; }
+       th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+   </style>
+   <script>
+       const apiUrl = 'https://script.google.com/macros/s/AKfycbwqNDP1ENbgzgZs4yJtG6Rts7V667EK2ZCjn311a-CdaiYB0R1z_HBaKPMdGLlG3IcW/exec';  // Replace with your Google Apps Script URL
+       let cart = [];
+
+       // Fetch products for rental
+       async function fetchProducts() {
+           const response = await fetch(apiUrl + '?action=getProducts');
+           const products = await response.json();
+           const productList = document.getElementById("productList");
+           productList.innerHTML = products.map(p =>
+               `<tr>
+                   <td>${p.productName}</td>
+                   <td>${p.category}</td>
+                   <td>$${p.price}/day</td>
+                   <td>${p.stock}</td>
+                   <td><button onclick="addToCart('${p.productName}', ${p.price})">Add to Cart</button></td>
+               </tr>`
+           ).join("");
+       }
+
+       // Add product to cart for rental
+       function addToCart(productName, price) {
+           const existingItem = cart.find(item => item.productName === productName);
+           if (existingItem) {
+               existingItem.quantity += 1;
+           } else {
+               cart.push({ productName, price, quantity: 1, rentalDuration: 1 });
+           }
+           displayCart();
+       }
+
+       // Display cart with rental options
+       function displayCart() {
+           const cartList = document.getElementById("cartList");
+           cartList.innerHTML = cart.map(item =>
+               `<tr>
+                   <td>${item.productName}</td>
+                   <td>$${item.price}/day</td>
+                   <td><input type="number" value="${item.quantity}" min="1" onchange="updateQuantity('${item.productName}', this.value)"></td>
+                   <td><input type="number" value="${item.rentalDuration}" min="1" onchange="updateRentalDuration('${item.productName}', this.value)" placeholder="Days"></td>
+                   <td>$${item.price * item.quantity * item.rentalDuration}</td>
+                   <td><button onclick="removeFromCart('${item.productName}')">Remove</button></td>
+               </tr>`
+           ).join("");
+           calculateTotal();
+       }
+
+       // Update rental duration in cart
+       function updateRentalDuration(productName, rentalDuration) {
+           const item = cart.find(item => item.productName === productName);
+           if (item) {
+               item.rentalDuration = parseInt(rentalDuration);
+               displayCart();
+           }
+       }
+
+       // Update quantity in cart
+       function updateQuantity(productName, quantity) {
+           const item = cart.find(item => item.productName === productName);
+           if (item) {
+               item.quantity = parseInt(quantity);
+               displayCart();
+           }
+       }
+
+       // Remove item from cart
+       function removeFromCart(productName) {
+           cart = cart.filter(item => item.productName !== productName);
+           displayCart();
+       }
+
+       // Calculate total rental cost
+       function calculateTotal() {
+           const total = cart.reduce((sum, item) => sum + (item.price * item.quantity * item.rentalDuration), 0);
+           document.getElementById("totalPrice").innerText = `Total: $${total}`;
+       }
+
+       // Proceed to rental checkout
+       async function checkout() {
+           const customerName = document.getElementById("customerName").value;
+           const contact = document.getElementById("contact").value;
+           const email = document.getElementById("email").value;
+           const address = document.getElementById("address").value;
+           const startDate = document.getElementById("startDate").value;
+
+           let rentalDetails = `Rental Order Details:\n\n`;
+           rentalDetails += `Customer Name: ${customerName}\n`;
+           rentalDetails += `Contact: ${contact}\n`;
+           rentalDetails += `Email: ${email}\n`;
+           rentalDetails += `Address: ${address}\n`;
+           rentalDetails += `Rental Start Date: ${startDate}\n`;
+           rentalDetails += `Products:\n`;
+
+           for (const item of cart) {
+               const dueDate = new Date(new Date(startDate).getTime() + (item.rentalDuration * 24 * 60 * 60 * 1000)).toISOString().slice(0, 10);
+               rentalDetails += `- ${item.productName}: ${item.quantity} units for ${item.rentalDuration} days (Due Date: ${dueDate})\n`;
+
+               await fetch(apiUrl, {
+                   method: 'POST',
+                   headers: { 'Content-Type': 'application/json' },
+                   body: JSON.stringify({
+                       action: 'saveRentalOrder',
+                       productName: item.productName,
+                       quantity: item.quantity,
+                       rentalDuration: item.rentalDuration,
+                       startDate,
+                       dueDate,
+                       customerName,
+                       contact,
+                       email,
+                       address
+                   })
+               });
+           }
+
+           // Prepare WhatsApp message
+           const encodedMessage = encodeURIComponent(rentalDetails);
+           const whatsappUrl = `https://wa.me/${contact}?text=${encodedMessage}`;
+           
+           // Redirect to WhatsApp
+           window.open(whatsappUrl, '_blank');
+
+           alert("Rental order placed successfully! Please check WhatsApp for confirmation.");
+           cart = [];
+           displayCart();
+       }
+
+       document.addEventListener("DOMContentLoaded", fetchProducts);
+   </script>
+</head>
+<body>
+   <h1>Product Rental</h1>
+   <table>
+       <thead>
+           <tr>
+               <th>Product Name</th>
+               <th>Category</th>
+               <th>Price (per day)</th>
+               <th>Stock</th>
+               <th>Action</th>
+           </tr>
+       </thead>
+       <tbody id="productList"></tbody>
+   </table>
+
+   <h2>Cart</h2>
+   <table>
+       <thead>
+           <tr>
+               <th>Product Name</th>
+               <th>Price (per day)</th>
+               <th>Quantity</th>
+               <th>Rental Duration (days)</th>
+               <th>Total</th>
+               <th>Action</th>
+           </tr>
+       </thead>
+       <tbody id="cartList"></tbody>
+   </table>
+   <p id="totalPrice">Total: $0</p>
+
+   <h2>Customer Information</h2>
+   <label>Name: <input type="text" id="customerName" required></label><br>
+   <label>Contact (WhatsApp number): <input type="text" id="contact" required></label><br>
+   <label>Email: <input type="email" id="email" required></label><br>
+   <label>Address: <input type="text" id="address" required></label><br>
+   <label>Start Date: <input type="date" id="startDate" required></label><br>
+   <button onclick="checkout()">Checkout</button>
+</body>
+</html>
