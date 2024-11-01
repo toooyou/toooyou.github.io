@@ -10,7 +10,7 @@
        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
    </style>
    <script>
-       const apiUrl = 'https://script.google.com/macros/s/AKfycbwqNDP1ENbgzgZs4yJtG6Rts7V667EK2ZCjn311a-CdaiYB0R1z_HBaKPMdGLlG3IcW/exec';  // Replace with your Google Apps Script URL
+       const apiUrl = 'https://script.google.com/macros/s/AKfycbwIzqrn38vmZBHsfQXRCtjrW99ttmwrBp49TNqD8ZqrXE3T0JL8MXr8MBI9WpVagvud/exec';  // Replace with your Google Apps Script URL
        let cart = [];
 
        // Fetch products for rental
@@ -87,54 +87,114 @@
        }
 
        // Proceed to rental checkout
-       async function checkout() {
-           const customerName = document.getElementById("customerName").value;
-           const contact = document.getElementById("contact").value;
-           const email = document.getElementById("email").value;
-           const address = document.getElementById("address").value;
-           const startDate = document.getElementById("startDate").value;
+    //    async function checkout() {
+    //        const customerName = document.getElementById("customerName").value;
+    //        const contact = document.getElementById("contact").value;
+    //        const email = document.getElementById("email").value;
+    //        const address = document.getElementById("address").value;
+    //        const startDate = document.getElementById("startDate").value;
 
-           let rentalDetails = `Rental Order Details:\n\n`;
-           rentalDetails += `Customer Name: ${customerName}\n`;
-           rentalDetails += `Contact: ${contact}\n`;
-           rentalDetails += `Email: ${email}\n`;
-           rentalDetails += `Address: ${address}\n`;
-           rentalDetails += `Rental Start Date: ${startDate}\n`;
-           rentalDetails += `Products:\n`;
+    //        let rentalDetails = `Rental Order Details:\n\n`;
+    //        rentalDetails += `Customer Name: ${customerName}\n`;
+    //        rentalDetails += `Contact: ${contact}\n`;
+    //        rentalDetails += `Email: ${email}\n`;
+    //        rentalDetails += `Address: ${address}\n`;
+    //        rentalDetails += `Rental Start Date: ${startDate}\n`;
+    //        rentalDetails += `Products:\n`;
 
-           for (const item of cart) {
-               const dueDate = new Date(new Date(startDate).getTime() + (item.rentalDuration * 24 * 60 * 60 * 1000)).toISOString().slice(0, 10);
-               rentalDetails += `- ${item.productName}: ${item.quantity} units for ${item.rentalDuration} days (Due Date: ${dueDate})\n`;
+    //        for (const item of cart) {
+    //            const dueDate = new Date(new Date(startDate).getTime() + (item.rentalDuration * 24 * 60 * 60 * 1000)).toISOString().slice(0, 10);
+    //            rentalDetails += `- ${item.productName}: ${item.quantity} units for ${item.rentalDuration} days (Due Date: ${dueDate})\n`;
 
-               await fetch(apiUrl, {
-                   method: 'POST',
-                   headers: { 'Content-Type': 'application/json' },
-                   body: JSON.stringify({
-                       action: 'saveRentalOrder',
-                       productName: item.productName,
-                       quantity: item.quantity,
-                       rentalDuration: item.rentalDuration,
-                       startDate,
-                       dueDate,
-                       customerName,
-                       contact,
-                       email,
-                       address
-                   })
-               });
-           }
+    //            await fetch(apiUrl, {
+    //                method: 'POST',
+    //                headers: { 'Content-Type': 'application/json' },
+    //                body: JSON.stringify({
+    //                    action: 'saveRentalOrder',
+    //                    productName: item.productName,
+    //                    quantity: item.quantity,
+    //                    rentalDuration: item.rentalDuration,
+    //                    startDate,
+    //                    dueDate,
+    //                    customerName,
+    //                    contact,
+    //                    email,
+    //                    address
+    //                })
+    //            });
+    //        }
 
-           // Prepare WhatsApp message
-           const encodedMessage = encodeURIComponent(rentalDetails);
-           const whatsappUrl = `https://wa.me/${contact}?text=${encodedMessage}`;
+    //        // Prepare WhatsApp message
+    //        const encodedMessage = encodeURIComponent(rentalDetails);
+    //        const whatsappUrl = `https://wa.me/${contact}?text=${encodedMessage}`;
            
-           // Redirect to WhatsApp
-           window.open(whatsappUrl, '_blank');
+    //        // Redirect to WhatsApp
+    //        window.open(whatsappUrl, '_blank');
 
-           alert("Rental order placed successfully! Please check WhatsApp for confirmation.");
-           cart = [];
-           displayCart();
-       }
+    //        alert("Rental order placed successfully! Please check WhatsApp for confirmation.");
+    //        cart = [];
+    //        displayCart();
+    //    }
+
+    async function checkout() {
+    const customerName = document.getElementById("customerName").value;
+    const contact = document.getElementById("contact").value;
+    const email = document.getElementById("email").value;
+    const address = document.getElementById("address").value;
+    const startDate = document.getElementById("startDate").value;
+
+    let rentalDetails = `Rental Order Details:\n\n`;
+    rentalDetails += `Customer Name: ${customerName}\n`;
+    rentalDetails += `Contact: ${contact}\n`;
+    rentalDetails += `Email: ${email}\n`;
+    rentalDetails += `Address: ${address}\n`;
+    rentalDetails += `Rental Start Date: ${startDate}\n`;
+    rentalDetails += `Products:\n`;
+
+    let rentalOrders = [];
+
+    for (const item of cart) {
+        const dueDate = new Date(new Date(startDate).getTime() + (item.rentalDuration * 24 * 60 * 60 * 1000)).toISOString().slice(0, 10);
+        rentalDetails += `- ${item.productName}: ${item.quantity} units for ${item.rentalDuration} days (Due Date: ${dueDate})\n`;
+
+        rentalOrders.push({
+            productName: item.productName,
+            quantity: item.quantity,
+            rentalDuration: item.rentalDuration,
+            startDate,
+            dueDate,
+            customerName,
+            contact,
+            email,
+            address
+        });
+    }
+
+    // Send all rental orders in a single request
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'saveRentalOrders', orders: rentalOrders })
+    });
+
+    if (!response.ok) {
+        const errorMessage = await response.text();
+        alert(`Error placing order: ${errorMessage}`);
+        return; // Exit the function on error
+    }
+
+    // Prepare WhatsApp message
+    const encodedMessage = encodeURIComponent(rentalDetails);
+    const whatsappUrl = `https://wa.me/${contact}?text=${encodedMessage}`;
+
+    // Redirect to WhatsApp
+    window.open(whatsappUrl, '_blank');
+
+    alert("Rental order placed successfully! Please check WhatsApp for confirmation.");
+    cart = []; // Clear the cart
+    displayCart(); // Refresh the cart display
+}
+
 
        document.addEventListener("DOMContentLoaded", fetchProducts);
    </script>
